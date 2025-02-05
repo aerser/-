@@ -129,7 +129,34 @@
                 });
             }
         }
+　　　　　function unbanUser() {
+    const unbanUsername = document.getElementById("unbanUser").value;
+    if (unbanUsername && bannedUsers.includes(unbanUsername)) {
+        bannedUsers = bannedUsers.filter(user => user !== unbanUsername);
+        localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+        alert(`${unbanUsername} のBANを解除しました。`);
+    } else {
+        alert("有効なユーザー名を入力してください。");
+    }
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+    const adminSection = document.getElementById("adminSection");
+    if (adminSection) {
+        const unbanInput = document.createElement("input");
+        unbanInput.type = "text";
+        unbanInput.id = "unbanUser";
+        unbanInput.placeholder = "BAN解除するユーザー名";
+        
+        const unbanButton = document.createElement("button");
+        unbanButton.innerText = "BAN解除";
+        unbanButton.onclick = unbanUser;
+        
+        adminSection.appendChild(document.createElement("br"));
+        adminSection.appendChild(unbanInput);
+        adminSection.appendChild(unbanButton);
+    }
+}
         function updateFileList() {
             const loggedInUser = localStorage.getItem("loggedInUser");
             const fileList = document.getElementById("fileList");
