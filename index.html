@@ -12,35 +12,33 @@
             padding: 0;
             background-color: #f4f4f4;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .container {
             max-width: 500px;
-            margin: 50px auto;
+            margin: 20px;
             padding: 20px;
             background: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
-        h2 {
+        .tabs {
+            display: flex;
+            justify-content: center;
             margin-bottom: 20px;
         }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
+        .tabs button {
             padding: 10px 20px;
-            margin: 10px 5px;
+            margin: 0 5px;
             border: none;
             border-radius: 4px;
             background-color: #5cb85c;
             color: white;
             cursor: pointer;
         }
-        button:hover {
+        .tabs button:hover {
             background-color: #4cae4c;
         }
         .hidden {
@@ -51,40 +49,70 @@
             height: auto;
             margin: 5px;
         }
+        .post {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+        .post p {
+            margin: 5px 0;
+        }
+        .post .actions {
+            display: flex;
+            justify-content: space-around;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>ログインシステム</h2>
-        <div id="loginForm">
-            <input type="text" id="username" placeholder="ユーザー名"><br>
-            <input type="password" id="password" placeholder="パスワード"><br>
-            <button onclick="login()">ログイン</button>
-            <button onclick="register()">新規登録</button>
+    <div class="tabs">
+        <button onclick="showTab('uploadTab')">ファイルアップロード</button>
+        <button onclick="showTab('timelineTab')">タイムライン</button>
+        <button onclick="showTab('notificationsTab')">通知</button>
+        <button onclick="showTab('searchTab')">検索</button>
+        <button onclick="showTab('settingsTab')">アカウント設定</button>
+        <button onclick="showTab('myPageTab')">マイページ</button>
+    </div>
+
+    <div id="uploadTab" class="container hidden">
+        <h2>ファイルアップロード</h2>
+        <input type="file" id="fileInput" multiple accept="image/*">
+        <button onclick="uploadFiles()">アップロード</button>
+        <div id="fileList"></div>
+    </div>
+
+    <div id="timelineTab" class="container hidden">
+        <h2>タイムライン</h2>
+        <div id="postForm">
+            <input type="text" id="postContent" placeholder="今何してる？"><br>
+            <button onclick="postContent()">投稿</button>
         </div>
-        
-        <div id="logoutSection" class="hidden">
-            <h3 id="welcomeMessage"></h3>
-            <button onclick="logout()">ログアウト</button>
-        </div>
-        
-        <div id="adminSection" class="hidden">
-            <h3>管理者専用パネル</h3>
-            <button onclick="showAllUsers()">全ユーザー情報</button>
-            <input type="text" id="banUser" placeholder="BANするユーザー名">
-            <button onclick="banUser()">BAN</button>
-            <input type="text" id="unbanUser" placeholder="BAN解除するユーザー名">
-            <button onclick="unbanUser()">BAN解除</button>
-            <div id="userList"></div>
-            <div id="allUserFiles"></div>
-        </div>
-        
-        <div id="uploadSection" class="hidden">
-            <h3>ファイルアップロード</h3>
-            <input type="file" id="fileInput" multiple accept="image/*">
-            <button onclick="uploadFiles()">アップロード</button>
-            <div id="fileList"></div>
-        </div>
+        <div id="posts"></div>
+    </div>
+
+    <div id="notificationsTab" class="container hidden">
+        <h2>通知</h2>
+        <div id="notifications"></div>
+    </div>
+
+    <div id="searchTab" class="container hidden">
+        <h2>検索</h2>
+        <input type="text" id="searchQuery" placeholder="ユーザー名で検索"><br>
+        <button onclick="searchUser()">検索</button>
+        <div id="searchResults"></div>
+    </div>
+
+    <div id="settingsTab" class="container hidden">
+        <h2>アカウント設定</h2>
+        <input type="text" id="newUsername" placeholder="新しいユーザー名"><br>
+        <input type="password" id="newPassword" placeholder="新しいパスワード"><br>
+        <input type="text" id="newBio" placeholder="自己紹介"><br>
+        <button onclick="updateSettings()">更新</button>
+    </div>
+
+    <div id="myPageTab" class="container hidden">
+        <h2>マイページ</h2>
+        <div id="myDetails"></div>
+        <h3>過去の投稿</h3>
+        <div id="myPosts"></div>
     </div>
 
     <script>
@@ -93,6 +121,7 @@
         let users = JSON.parse(localStorage.getItem("users")) || { "admin": "password" };
         let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
         let userFiles = JSON.parse(localStorage.getItem("userFiles")) || {};
+        let posts = JSON.parse(localStorage.getItem("posts")) || [];
 
         function register() {
             const username = document.getElementById("username").value;
@@ -213,12 +242,121 @@
             }
         }
 
+        function postContent() {
+            const content = document.getElementById("postContent").value;
+            if (!content) {
+                alert("投稿内容を入力してください。");
+                return;
+            }
+            const loggedInUser = localStorage.getItem("loggedInUser");
+            const post = { user: loggedInUser, content: content, likes: 0, retweets: 0, views: 0 };
+            posts.push(post);
+            localStorage.setItem("posts", JSON.stringify(posts));
+            updatePosts();
+        }
+
+        function updatePosts() {
+            const postsDiv = document.getElementById("posts");
+            postsDiv.innerHTML = "";
+            posts.forEach((post, index) => {
+                postsDiv.innerHTML += `
+                    <div class="post">
+                        <p><strong>${post.user}</strong></p>
+                        <p>${post.content}</p>
+                        <div class="actions">
+                            <span onclick="likePost(${index})">いいね (${post.likes})</span>
+                            <span onclick="retweetPost(${index})">リツイート (${post.retweets})</span>
+                            <span onclick="editPost(${index})">編集</span>
+                            <span onclick="deletePost(${index})">削除</span>
+                            <span>表示 (${post.views})</span>
+                        </div>
+                    </div>
+                `;
+                posts[index].views++;
+            });
+            localStorage.setItem("posts", JSON.stringify(posts));
+        }
+
+        function likePost(index) {
+            posts[index].likes++;
+            localStorage.setItem("posts", JSON.stringify(posts));
+            updatePosts();
+        }
+
+        function retweetPost(index) {
+            posts[index].retweets++;
+            localStorage.setItem("posts", JSON.stringify(posts));
+            updatePosts();
+        }
+
+        function editPost(index) {
+            const newContent = prompt("新しい投稿内容を入力してください：", posts[index].content);
+            if (newContent) {
+                posts[index].content = newContent;
+                localStorage.setItem("posts", JSON.stringify(posts));
+                updatePosts();
+            }
+        }
+
+        function deletePost(index) {
+            if (confirm("この投稿を削除してもよろしいですか？")) {
+                posts.splice(index, 1);
+                localStorage.setItem("posts", JSON.stringify(posts));
+                updatePosts();
+            }
+        }
+
+        function searchUser() {
+            const query = document.getElementById("searchQuery").value.toLowerCase();
+            const resultsDiv = document.getElementById("searchResults");
+            resultsDiv.innerHTML = "<h4>検索結果</h4>";
+            for (let user in users) {
+                if (user.toLowerCase().includes(query)) {
+                    resultsDiv.innerHTML += `<p>${user}</p>`;
+                }
+            }
+        }
+
+        function updateSettings() {
+            const newUsername = document.getElementById("newUsername").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const newBio = document.getElementById("newBio").value;
+            const loggedInUser = localStorage.getItem("loggedInUser");
+
+            if (newUsername) {
+                users[loggedInUser] = newPassword || users[loggedInUser];
+                if (loggedInUser !== newUsername) {
+                    users[newUsername] = users[loggedInUser];
+                    delete users[loggedInUser];
+                    localStorage.setItem("loggedInUser", newUsername);
+                }
+                localStorage.setItem("users", JSON.stringify(users));
+            }
+            // Update bio and other settings here if needed
+            alert("アカウント設定が更新されました。");
+            updateUI();
+        }
+
         function updateUI() {
             document.getElementById("loginForm").style.display = localStorage.getItem("loggedInUser") ? "none" : "block";
             document.getElementById("logoutSection").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
-            document.getElementById("uploadSection").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("uploadTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("timelineTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("notificationsTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("searchTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("settingsTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
+            document.getElementById("myPageTab").style.display = localStorage.getItem("loggedInUser") ? "block" : "none";
             document.getElementById("adminSection").style.display = localStorage.getItem("loggedInUser") === adminUser ? "block" : "none";
             updateFileList();
+            updatePosts();
+        }
+
+        function showTab(tabId) {
+            const tabs = document.getElementsByClassName("container");
+            for (let tab of tabs) {
+                tab.style.display = "none";
+            }
+            document.getElementById(tabId).style.display = "block";
         }
 
         updateUI();
