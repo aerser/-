@@ -10,8 +10,8 @@
             background-color: #f5f8fa;
             margin: 0;
             padding: 0;
-            display: flex;
             color: #14171a;
+            display: flex;
         }
         .header {
             background-color: #1da1f2;
@@ -143,6 +143,14 @@
         .nav-item:hover {
             background-color: #e8f5fe;
         }
+        .login-form {
+            width: 300px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -150,27 +158,17 @@
         <h1>Twitterクローン</h1>
     </div>
     <div class="sidebar">
-        <div class="nav-item"><a href="#">ホーム</a></div>
-        <div class="nav-item"><a href="#">プロフィール</a></div>
-        <div class="nav-item"><a href="#">メッセージ</a></div>
-        <div class="nav-item"><a href="#">通知</a></div>
-        <div class="nav-item"><a href="#">設定</a></div>
+        <div class="nav-item"><a href="#" onclick="navigate('home')">ホーム</a></div>
+        <div class="nav-item"><a href="#" onclick="navigate('profile')">プロフィール</a></div>
+        <div class="nav-item"><a href="#" onclick="navigate('messages')">メッセージ</a></div>
+        <div class="nav-item"><a href="#" onclick="navigate('notifications')">通知</a></div>
+        <div class="nav-item"><a href="#" onclick="navigate('settings')">設定</a></div>
+        <div class="nav-item"><a href="#" onclick="logout()">ログアウト</a></div>
     </div>
-    <div class="content">
-        <div class="user-form">
-            <h2>ユーザー詳細設定</h2>
-            <input type="text" id="username" placeholder="ユーザー名">
-            <textarea id="bio" placeholder="自己紹介"></textarea>
-            <input type="text" id="location" placeholder="場所">
-            <button onclick="saveUserDetails()">保存</button>
-        </div>
-        <div class="tweet-form">
-            <textarea id="tweetInput" placeholder="今何してる？"></textarea>
-            <button onclick="postTweet()">投稿</button>
-        </div>
-        <ul class="tweets" id="tweetList"></ul>
+    <div class="content" id="main-content">
+        <!-- コンテンツがここに表示されます -->
     </div>
-    <div class="right-sidebar">
+    <div class="right-sidebar" id="right-sidebar">
         <div class="search-form">
             <input type="text" id="searchInput" placeholder="ユーザーまたは投稿を検索">
             <button onclick="search()">検索</button>
@@ -188,6 +186,11 @@
             <p>フォロワー: <span id="followerCount"></span></p>
             <button class="follow-button" onclick="followUser()">フォロー</button>
         </div>
+    </div>
+    <div class="login-form" id="login-form" style="display: none;">
+        <h2>ログイン</h2>
+        <input type="text" id="login-username" placeholder="ユーザー名">
+        <button onclick="login()">ログイン</button>
     </div>
 
     <script>
@@ -387,9 +390,63 @@
             });
         }
 
+        function login() {
+            const username = document.getElementById('login-username').value;
+            if (username) {
+                localStorage.setItem('currentUser', username);
+                currentUser = { username, following: [], followers: [] };
+                loadUserDetails();
+                navigate('home');
+            } else {
+                alert('ユーザー名を入力してください');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('right-sidebar').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+
+        function navigate(section) {
+            if (!currentUser) {
+                alert('ログインしてください');
+                return;
+            }
+            document.getElementById('main-content').innerHTML = '';
+            if (section === 'home') {
+                displayTweets();
+            } else if (section === 'profile') {
+                displayUserDetails();
+            } else if (section === 'settings') {
+                document.getElementById('main-content').innerHTML = `
+                    <div class="user-form">
+                        <h2>ユーザー詳細設定</h2>
+                        <input type="text" id="username" placeholder="ユーザー名" value="${currentUser.username}">
+                        <textarea id="bio" placeholder="自己紹介">${currentUser.bio}</textarea>
+                        <input type="text" id="location" placeholder="場所" value="${currentUser.location}">
+                        <button onclick="saveUserDetails()">保存</button>
+                    </div>
+                `;
+            }
+        }
+
         window.onload = function() {
-            loadUserDetails();
-            displayTweets();
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                loadUserDetails();
+                navigate('home');
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('right-sidebar').style.display = 'block';
+            } else {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('right-sidebar').style.display = 'none';
+            }
         }
     </script>
 </body>
