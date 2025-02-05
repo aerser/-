@@ -3,447 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログインシステム</title>
+    <title>Twitterクローン</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
+            background-color: #e6ecf0;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        }
+        .header {
+            background-color: #1da1f2;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
         }
         .container {
-            max-width: 500px;
-            margin: 20px;
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
             padding: 20px;
-            background: #fff;
+            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
         }
-        .tabs {
-            display: flex;
-            justify-content: center;
+        .tweet-form, .user-form, .trending {
             margin-bottom: 20px;
         }
-        .tabs button {
-            padding: 10px 20px;
-            margin: 0 5px;
-            border: none;
-            border-radius: 4px;
-            background-color: #5cb85c;
+        .tweet-form input, .tweet-form textarea, .tweet-form button,
+        .user-form input, .user-form textarea, .user-form button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .tweets {
+            list-style: none;
+            padding: 0;
+        }
+        .tweet {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .tweet p {
+            margin: 0;
+        }
+        .tweet .user {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .tweet .content {
+            flex: 1;
+        }
+        .tweet .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .tweet .actions span {
+            cursor: pointer;
+            color: #1da1f2;
+        }
+        .tweet .actions span:hover {
+            text-decoration: underline;
+        }
+        .trending h2 {
+            margin-top: 0;
+        }
+        .hashtag {
+            font-weight: bold;
+            color: #1da1f2;
+        }
+        .user-details {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .user-details h2 {
+            margin-top: 0;
+        }
+        .follow-button {
+            background-color: #1da1f2;
             color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .tabs button:hover {
-            background-color: #4cae4c;
-        }
-        .hidden {
-            display: none;
-        }
-        .preview-img {
-            width: 100px;
-            height: auto;
-            margin: 5px;
-        }
-        .post {
-            border-bottom: 1px solid #ccc;
-            padding: 10px 0;
-        }
-        .post p {
-            margin: 5px 0;
-        }
-        .post .actions {
-            display: flex;
-            justify-content: space-around;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
+        .follow-button:hover {
+            background-color: #0d95e8;
         }
     </style>
 </head>
 <body>
-    <div id="loginForm" class="container hidden">
-        <h2>ログイン</h2>
-        <input type="text" id="loginUsername" placeholder="ユーザー名" required><br>
-        <input type="password" id="loginPassword" placeholder="パスワード" required><br>
-        <button onclick="login()">ログイン</button>
-        <button onclick="showRegistration()">新規登録</button>
+    <div class="header">
+        <h1>Twitterクローン</h1>
     </div>
-
-    <div id="registrationForm" class="container hidden">
-        <h2>新規登録</h2>
-        <input type="email" id="registerEmail" placeholder="メールアドレス" required><br>
-        <input type="text" id="registerUsername" placeholder="ユーザー名" required><br>
-        <input type="password" id="registerPassword" placeholder="パスワード" required><br>
-        <button onclick="register()">登録</button>
-        <button onclick="showLogin()">戻る</button>
-    </div>
-
-    <div id="tabs" class="tabs hidden">
-        <button onclick="showTab('uploadTab')">ファイルアップロード</button>
-        <button onclick="showTab('timelineTab')">タイムライン</button>
-        <button onclick="showTab('notificationsTab')">通知</button>
-        <button onclick="showTab('searchTab')">検索</button>
-        <button onclick="showTab('settingsTab')">アカウント設定</button>
-        <button onclick="showTab('myPageTab')">マイページ</button>
-        <button id="adminTab" class="hidden" onclick="showTab('adminTabContent')">管理</button>
-    </div>
-
-    <div id="uploadTab" class="container hidden">
-        <h2>ファイルアップロード</h2>
-        <input type="file" id="fileInput" multiple accept="image/*">
-        <button onclick="uploadFiles()">アップロード</button>
-        <div id="fileList"></div>
-    </div>
-
-    <div id="timelineTab" class="container hidden">
-        <h2>タイムライン</h2>
-        <div id="postForm">
-            <input type="text" id="postContent" placeholder="今何してる？"><br>
-            <button onclick="postContent()">投稿</button>
+    <div class="container">
+        <div class="user-form">
+            <h2>ユーザー詳細設定</h2>
+            <input type="text" id="username" placeholder="ユーザー名">
+            <textarea id="bio" placeholder="自己紹介"></textarea>
+            <input type="text" id="location" placeholder="場所">
+            <button onclick="saveUserDetails()">保存</button>
         </div>
-        <div id="posts"></div>
-    </div>
-
-    <div id="notificationsTab" class="container hidden">
-        <h2>通知</h2>
-        <div id="notifications"></div>
-    </div>
-
-    <div id="searchTab" class="container hidden">
-        <h2>検索</h2>
-        <input type="text" id="searchQuery" placeholder="ユーザー名で検索"><br>
-        <button onclick="searchUser()">検索</button>
-        <div id="searchResults"></div>
-    </div>
-
-    <div id="settingsTab" class="container hidden">
-        <h2>アカウント設定</h2>
-        <input type="text" id="newUsername" placeholder="新しいユーザー名"><br>
-        <input type="password" id="newPassword" placeholder="新しいパスワード"><br>
-        <input type="text" id="newBio" placeholder="自己紹介"><br>
-        <button onclick="updateSettings()">更新</button>
-        <button onclick="logout()">ログアウト</button>
-    </div>
-
-    <div id="myPageTab" class="container hidden">
-        <h2>マイページ</h2>
-        <div id="myDetails"></div>
-        <h3>過去の投稿</h3>
-        <div id="myPosts"></div>
-    </div>
-
-    <div id="adminTabContent" class="container hidden">
-        <h2>管理</h2>
-        <div id="userList"></div>
-        <h3>アカウント管理</h3>
-        <input type="text" id="manageUsername" placeholder="ユーザー名">
-        <button onclick="banUser()">BAN</button>
-        <button onclick="unbanUser()">BAN解除</button>
-        <button onclick="suspendUser()">一時利用停止</button>
-        <button onclick="deleteUser()">アカウント削除</button>
+        <div class="tweet-form">
+            <textarea id="tweetInput" placeholder="今何してる？"></textarea>
+            <button onclick="postTweet()">投稿</button>
+        </div>
+        <ul class="tweets" id="tweetList"></ul>
+        <div class="trending">
+            <h2>トレンド</h2>
+            <ul id="trendingList"></ul>
+        </div>
+        <div class="user-details">
+            <h2>ユーザー詳細</h2>
+            <p>ユーザー名: <span id="detailUsername"></span></p>
+            <p>自己紹介: <span id="detailBio"></span></p>
+            <p>場所: <span id="detailLocation"></span></p>
+            <p>フォロー中: <span id="followingCount"></span></p>
+            <p>フォロワー: <span id="followerCount"></span></p>
+            <button class="follow-button" onclick="followUser()">フォロー</button>
+        </div>
     </div>
 
     <script>
-        const adminUser = "admin";
-        const adminPassword = "password";
-        let users = JSON.parse(localStorage.getItem("users")) || {
-            "admin": { password: "password", email: "admin@example.com" }
-        };
-        let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
-        let suspendedUsers = JSON.parse(localStorage.getItem("suspendedUsers")) || [];
-        let userFiles = JSON.parse(localStorage.getItem("userFiles")) || {};
-        let posts = JSON.parse(localStorage.getItem("posts")) || [];
+        let currentUser = null;
 
-        function register() {
-            const email = document.getElementById("registerEmail").value;
-            const username = document.getElementById("registerUsername").value;
-            const password = document.getElementById("registerPassword").value;
-            
-            if (!email || !username || !password) {
-                alert("全てのフィールドを入力してください。");
-                return;
-            }
-            if (users[username]) {
-                alert("このユーザー名は既に登録されています。");
-                return;
-            }
-            
-            users[username] = { password, email };
-            localStorage.setItem("users", JSON.stringify(users));
-            alert("登録完了！ログインしてください。");
-            showLogin();
+        function saveUserDetails() {
+            const username = document.getElementById('username').value;
+            const bio = document.getElementById('bio').value;
+            const location = document.getElementById('location').value;
+            const userDetails = { username, bio, location, followers: [], following: [] };
+            localStorage.setItem('userDetails', JSON.stringify(userDetails));
+            currentUser = userDetails;
+            alert('ユーザー詳細が保存されました。');
+            displayUserDetails();
         }
 
-        function login() {
-            const username = document.getElementById("loginUsername").value;
-            const password = document.getElementById("loginPassword").value;
-            
-            if (bannedUsers.includes(username)) {
-                alert("このアカウントはBANされています。");
-                return;
-            }
-            
-            if (users[username] && users[username].password === password) {
-                localStorage.setItem("loggedInUser", username);
-                alert("ログイン成功！");
-                updateUI();
-            } else {
-                alert("ユーザー名またはパスワードが間違っています。");
+        function loadUserDetails() {
+            const userDetails = JSON.parse(localStorage.getItem('userDetails')) || {};
+            document.getElementById('username').value = userDetails.username || '';
+            document.getElementById('bio').value = userDetails.bio || '';
+            document.getElementById('location').value = userDetails.location || '';
+            currentUser = userDetails;
+            displayUserDetails();
+        }
+
+        function displayUserDetails() {
+            if (currentUser) {
+                document.getElementById('detailUsername').textContent = currentUser.username;
+                document.getElementById('detailBio').textContent = currentUser.bio;
+                document.getElementById('detailLocation').textContent = currentUser.location;
+                document.getElementById('followingCount').textContent = currentUser.following.length;
+                document.getElementById('followerCount').textContent = currentUser.followers.length;
             }
         }
 
-        function logout() {
-            localStorage.removeItem("loggedInUser");
-            alert("ログアウトしました。");
-            updateUI();
-        }
-
-        function banUser() {
-            const banUsername = document.getElementById("manageUsername").value;
-            if (banUsername && users[banUsername]) {
-                bannedUsers.push(banUsername);
-                localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
-                alert(`${banUsername} をBANしました。`);
-            } else {
-                alert("有効なユーザー名を入力してください。");
-            }
-        }
-
-        function unbanUser() {
-            const unbanUsername = document.getElementById("manageUsername").value;
-            if (unbanUsername && bannedUsers.includes(unbanUsername)) {
-                bannedUsers = bannedUsers.filter(user => user !== unbanUsername);
-                localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
-                alert(`${unbanUsername} のBANを解除しました。`);
-            } else {
-                alert("有効なユーザー名を入力してください。");
-            }
-        }
-
-        function suspendUser() {
-            const suspendUsername = document.getElementById("manageUsername").value;
-            if (suspendUsername && users[suspendUsername]) {
-                suspendedUsers.push(suspendUsername);
-                localStorage.setItem("suspendedUsers", JSON.stringify(suspendedUsers));
-                alert(`${suspendUsername} を一時利用停止にしました。`);
-            } else {
-                alert("有効なユーザー名を入力してください。");
-            }
-        }
-
-        function deleteUser() {
-            const deleteUsername = document.getElementById("manageUsername").value;
-            if (deleteUsername && users[deleteUsername]) {
-                delete users[deleteUsername];
-                localStorage.setItem("users", JSON.stringify(users));
-                alert(`${deleteUsername} のアカウントを削除しました。`);
-            } else {
-                alert("有効なユーザー名を入力してください。");
-            }
-        }
-
-        function showAllUsers() {
-            let userListDiv = document.getElementById("userList");
-            userListDiv.innerHTML = "<h4>登録ユーザー一覧</h4><table><tr><th>ユーザー名</th><th>メールアドレス</th><th>パスワード</th></tr>";
-            for (let user in users) {
-                userListDiv.innerHTML += `<tr><td>${user}</td><td>${users[user].email}</td><td>${users[user].password}</td></tr>`;
-            }
-            userListDiv.innerHTML += "</table>";
-            showAllUserFiles();
-        }
-
-        function showAllUserFiles() {
-            let allUserFilesDiv = document.getElementById("allUserFiles");
-            allUserFilesDiv.innerHTML = "<h4>全ユーザーのアップロードファイル</h4>";
-            for (let user in userFiles) {
-                allUserFilesDiv.innerHTML += `<h5>${user}のファイル</h5>`;
-                userFiles[user].forEach(fileData => {
-                    allUserFilesDiv.innerHTML += `<div><img src="${fileData.url}" class="preview-img"><p>${fileData.name}</p></div>`;
-                });
-            }
-        }
-
-        function updateFileList() {
-            const loggedInUser = localStorage.getItem("loggedInUser");
-            const fileList = document.getElementById("fileList");
-            fileList.innerHTML = "<h4>アップロード済みファイル</h4>";
-            
-            if (userFiles[loggedInUser]) {
-                userFiles[loggedInUser].forEach(fileData => {
-                    fileList.innerHTML += `<div><img src="${fileData.url}" class="preview-img"><p>${fileData.name}</p></div>`;
-                });
-            }
-        }
-
-        function uploadFiles() {
-            const loggedInUser = localStorage.getItem("loggedInUser");
-            const files = document.getElementById("fileInput").files;
-            
-            if (!userFiles[loggedInUser]) {
-                userFiles[loggedInUser] = [];
-            }
-            if (userFiles[loggedInUser].length + files.length > 100) {
-                alert("最大100個のファイルまでアップロード可能です。");
-                return;
-            }
-            
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    userFiles[loggedInUser].push({ name: file.name, url: event.target.result });
-                    localStorage.setItem("userFiles", JSON.stringify(userFiles));
-                    updateFileList();
+        function postTweet() {
+            const tweetInput = document.getElementById('tweetInput').value;
+            if (currentUser && tweetInput) {
+                const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+                const tweet = {
+                    user: currentUser.username,
+                    content: tweetInput,
+                    likes: 0,
+                    retweets: 0,
+                    id: new Date().getTime()
                 };
-                reader.readAsDataURL(file);
+                tweets.push(tweet);
+                localStorage.setItem('tweets', JSON.stringify(tweets));
+                displayTweets();
+                document.getElementById('tweetInput').value = '';
             }
         }
 
-        function postContent() {
-            const content = document.getElementById("postContent").value;
-            if (!content) {
-                alert("投稿内容を入力してください。");
-                return;
-            }
-            const loggedInUser = localStorage.getItem("loggedInUser");
-            const post = { user: loggedInUser, content: content, likes: 0, retweets: 0, views: 0 };
-            posts.push(post);
-            localStorage.setItem("posts", JSON.stringify(posts));
-            updatePosts();
-        }
-
-        function updatePosts() {
-            const postsDiv = document.getElementById("posts");
-            postsDiv.innerHTML = "";
-            posts.forEach((post, index) => {
-                postsDiv.innerHTML += `
-                    <div class="post">
-                        <p><strong>${post.user}</strong></p>
-                        <p>${post.content}</p>
+        function displayTweets() {
+            const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            const tweetList = document.getElementById('tweetList');
+            tweetList.innerHTML = '';
+            tweets.forEach(tweet => {
+                const li = document.createElement('li');
+                li.className = 'tweet';
+                li.innerHTML = `
+                    <div class="content">
+                        <p class="user">${tweet.user}</p>
+                        <p>${tweet.content}</p>
                         <div class="actions">
-                            <span onclick="likePost(${index})">いいね (${post.likes})</span>
-                            <span onclick="retweetPost(${index})">リツイート (${post.retweets})</span>
-                            <span onclick="editPost(${index})">編集</span>
-                            <span onclick="deletePost(${index})">削除</span>
-                            <span>表示 (${post.views})</span>
+                            <span onclick="likeTweet(${tweet.id})">いいね (${tweet.likes})</span>
+                            <span onclick="retweetTweet(${tweet.id})">リツイート (${tweet.retweets})</span>
+                            <span onclick="deleteTweet(${tweet.id})">削除</span>
                         </div>
                     </div>
                 `;
-                posts[index].views++;
+                tweetList.appendChild(li);
             });
-            localStorage.setItem("posts", JSON.stringify(posts));
+            updateTrending();
         }
 
-        function likePost(index) {
-            posts[index].likes++;
-            localStorage.setItem("posts", JSON.stringify(posts));
-            updatePosts();
-        }
-
-        function retweetPost(index) {
-            posts[index].retweets++;
-            localStorage.setItem("posts", JSON.stringify(posts));
-            updatePosts();
-        }
-
-        function editPost(index) {
-            const newContent = prompt("新しい投稿内容を入力してください：", posts[index].content);
-            if (newContent) {
-                posts[index].content = newContent;
-                localStorage.setItem("posts", JSON.stringify(posts));
-                updatePosts();
+        function likeTweet(id) {
+            const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            const tweet = tweets.find(t => t.id === id);
+            if (tweet) {
+                tweet.likes++;
+                localStorage.setItem('tweets', JSON.stringify(tweets));
+                displayTweets();
             }
         }
 
-        function deletePost(index) {
-            if (confirm("この投稿を削除してもよろしいですか？")) {
-                posts.splice(index, 1);
-                localStorage.setItem("posts", JSON.stringify(posts));
-                updatePosts();
+        function retweetTweet(id) {
+            const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            const tweet = tweets.find(t => t.id === id);
+            if (tweet) {
+                tweet.retweets++;
+                localStorage.setItem('tweets', JSON.stringify(tweets));
+                displayTweets();
             }
         }
 
-        function searchUser() {
-            const query = document.getElementById("searchQuery").value.toLowerCase();
-            const resultsDiv = document.getElementById("searchResults");
-            resultsDiv.innerHTML = "<h4>検索結果</h4>";
-            for (let user in users) {
-                if (user.toLowerCase().includes(query)) {
-                    resultsDiv.innerHTML += `<p>${user}</p>`;
+        function deleteTweet(id) {
+            let tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            tweets = tweets.filter(t => t.id !== id);
+            localStorage.setItem('tweets', JSON.stringify(tweets));
+            displayTweets();
+        }
+
+        function followUser() {
+            const userToFollow = prompt("フォローするユーザー名を入力してください:");
+            if (userToFollow && currentUser) {
+                let users = JSON.parse(localStorage.getItem('users')) || {};
+                if (!users[userToFollow]) {
+                    users[userToFollow] = { username: userToFollow, followers: [], following: [] };
                 }
-            }
-        }
-
-        function updateSettings() {
-            const newUsername = document.getElementById("newUsername").value;
-            const newPassword = document.getElementById("newPassword").value;
-            const newBio = document.getElementById("newBio").value;
-            const loggedInUser = localStorage.getItem("loggedInUser");
-
-            if (newUsername) {
-                users[loggedInUser] = newPassword || users[loggedInUser];
-                if (loggedInUser !== newUsername) {
-                    users[newUsername] = users[loggedInUser];
-                    delete users[loggedInUser];
-                    localStorage.setItem("loggedInUser", newUsername);
+                if (!users[currentUser.username]) {
+                    users[currentUser.username] = currentUser;
                 }
-                localStorage.setItem("users", JSON.stringify(users));
+                users[currentUser.username].following.push(userToFollow);
+                users[userToFollow].followers.push(currentUser.username);
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser.following.push(userToFollow);
+                displayUserDetails();
+                alert(`${userToFollow} をフォローしました。`);
             }
-            // Update bio and other settings here if needed
-            alert("アカウント設定が更新されました。");
-            updateUI();
         }
 
-        function showRegistration() {
-            document.getElementById("loginForm").classList.add("hidden");
-            document.getElementById("registrationForm").classList.remove("hidden");
+        function updateTrending() {
+            const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            const hashtagCounts = {};
+            tweets.forEach(tweet => {
+                const words = tweet.content.split(/\s+/);
+                words.forEach(word => {
+                    if (word.startsWith('#')) {
+                        const hashtag = word.toLowerCase();
+                        if (hashtagCounts[hashtag]) {
+                            hashtagCounts[hashtag]++;
+                        } else {
+                            hashtagCounts[hashtag] = 1;
+                        }
+                    }
+                });
+            });
+
+            const trendingHashtags = Object.keys(hashtagCounts).sort((a, b) => hashtagCounts[b] - hashtagCounts[a]);
+            const trendingList = document.getElementById('trendingList');
+            trendingList.innerHTML = '';
+            trendingHashtags.slice(0, 10).forEach(hashtag => {
+                const li = document.createElement('li');
+                li.className = 'hashtag';
+                li.textContent = `${hashtag} (${hashtagCounts[hashtag]})`;
+                trendingList.appendChild(li);
+            });
         }
 
-        function showLogin() {
-            document.getElementById("registrationForm").classList.add("hidden");
-            document.getElementById("loginForm").classList.remove("hidden");
+        window.onload = function() {
+            loadUserDetails();
+            displayTweets();
         }
-
-        function updateUI() {
-            const loggedInUser = localStorage.getItem("loggedInUser");
-            document.getElementById("loginForm").style.display = loggedInUser ? "none" : "block";
-            document.getElementById("registrationForm").style.display = "none";
-            document.getElementById("tabs").style.display = loggedInUser ? "flex" : "none";
-            document.getElementById("uploadTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("timelineTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("notificationsTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("searchTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("settingsTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("myPageTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("adminTab").style.display = loggedInUser === adminUser ? "block" : "none";
-            document.getElementById("adminTabContent").style.display = loggedInUser === adminUser ? "block" : "none";
-            if (loggedInUser === adminUser) {
-                showAllUsers();
-            }
-            updateFileList();
-            updatePosts();
-        }
-
-        function showTab(tabId) {
-            const tabs = document.getElementsByClassName("container");
-            for (let tab of tabs) {
-                tab.style.display = "none";
-            }
-            document.getElementById(tabId).style.display = "block";
-        }
-
-        updateUI();
     </script>
-</
+</body>
+</html>
