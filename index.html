@@ -60,6 +60,17 @@
             display: flex;
             justify-content: space-around;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -87,6 +98,7 @@
         <button onclick="showTab('searchTab')">検索</button>
         <button onclick="showTab('settingsTab')">アカウント設定</button>
         <button onclick="showTab('myPageTab')">マイページ</button>
+        <button id="adminTab" class="hidden" onclick="showTab('adminTabContent')">管理</button>
     </div>
 
     <div id="uploadTab" class="container hidden">
@@ -133,11 +145,25 @@
         <div id="myPosts"></div>
     </div>
 
+    <div id="adminTabContent" class="container hidden">
+        <h2>管理</h2>
+        <div id="userList"></div>
+        <h3>アカウント管理</h3>
+        <input type="text" id="manageUsername" placeholder="ユーザー名">
+        <button onclick="banUser()">BAN</button>
+        <button onclick="unbanUser()">BAN解除</button>
+        <button onclick="suspendUser()">一時利用停止</button>
+        <button onclick="deleteUser()">アカウント削除</button>
+    </div>
+
     <script>
         const adminUser = "admin";
         const adminPassword = "password";
-        let users = JSON.parse(localStorage.getItem("users")) || { "admin": "password" };
+        let users = JSON.parse(localStorage.getItem("users")) || {
+            "admin": { password: "password", email: "admin@example.com" }
+        };
         let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
+        let suspendedUsers = JSON.parse(localStorage.getItem("suspendedUsers")) || [];
         let userFiles = JSON.parse(localStorage.getItem("userFiles")) || {};
         let posts = JSON.parse(localStorage.getItem("posts")) || [];
 
@@ -186,7 +212,7 @@
         }
 
         function banUser() {
-            const banUsername = document.getElementById("banUser").value;
+            const banUsername = document.getElementById("manageUsername").value;
             if (banUsername && users[banUsername]) {
                 bannedUsers.push(banUsername);
                 localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
@@ -197,7 +223,7 @@
         }
 
         function unbanUser() {
-            const unbanUsername = document.getElementById("unbanUser").value;
+            const unbanUsername = document.getElementById("manageUsername").value;
             if (unbanUsername && bannedUsers.includes(unbanUsername)) {
                 bannedUsers = bannedUsers.filter(user => user !== unbanUsername);
                 localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
@@ -207,12 +233,35 @@
             }
         }
 
+        function suspendUser() {
+            const suspendUsername = document.getElementById("manageUsername").value;
+            if (suspendUsername && users[suspendUsername]) {
+                suspendedUsers.push(suspendUsername);
+                localStorage.setItem("suspendedUsers", JSON.stringify(suspendedUsers));
+                alert(`${suspendUsername} を一時利用停止にしました。`);
+            } else {
+                alert("有効なユーザー名を入力してください。");
+            }
+        }
+
+        function deleteUser() {
+            const deleteUsername = document.getElementById("manageUsername").value;
+            if (deleteUsername && users[deleteUsername]) {
+                delete users[deleteUsername];
+                localStorage.setItem("users", JSON.stringify(users));
+                alert(`${deleteUsername} のアカウントを削除しました。`);
+            } else {
+                alert("有効なユーザー名を入力してください。");
+            }
+        }
+
         function showAllUsers() {
             let userListDiv = document.getElementById("userList");
-            userListDiv.innerHTML = "<h4>登録ユーザー一覧</h4>";
+            userListDiv.innerHTML = "<h4>登録ユーザー一覧</h4><table><tr><th>ユーザー名</th><th>メールアドレス</th><th>パスワード</th></tr>";
             for (let user in users) {
-                userListDiv.innerHTML += `<p>${user}</p>`;
+                userListDiv.innerHTML += `<tr><td>${user}</td><td>${users[user].email}</td><td>${users[user].password}</td></tr>`;
             }
+            userListDiv.innerHTML += "</table>";
             showAllUserFiles();
         }
 
@@ -378,7 +427,11 @@
             document.getElementById("searchTab").style.display = loggedInUser ? "block" : "none";
             document.getElementById("settingsTab").style.display = loggedInUser ? "block" : "none";
             document.getElementById("myPageTab").style.display = loggedInUser ? "block" : "none";
-            document.getElementById("adminSection").style.display = loggedInUser === adminUser ? "block" : "none";
+            document.getElementById("adminTab").style.display = loggedInUser === adminUser ? "block" : "none";
+            document.getElementById("adminTabContent").style.display = loggedInUser === adminUser ? "block" : "none";
+            if (loggedInUser === adminUser) {
+                showAllUsers();
+            }
             updateFileList();
             updatePosts();
         }
@@ -393,5 +446,4 @@
 
         updateUI();
     </script>
-</body>
-</html>
+</
