@@ -39,6 +39,8 @@
         <button onclick="showAllUsers()">全ユーザー情報</button>
         <input type="text" id="banUser" placeholder="BANするユーザー名">
         <button onclick="banUser()">BAN</button>
+        <input type="text" id="unbanUser" placeholder="BAN解除するユーザー名">
+        <button onclick="unbanUser()">BAN解除</button>
         <div id="userList"></div>
         <div id="allUserFiles"></div>
     </div>
@@ -51,9 +53,9 @@
     </div>
 
     <script>
-        const adminUser = "ゔぃぎゃんくん";
-        const adminPassword = "warari25ga";
-        let users = JSON.parse(localStorage.getItem("users")) || { "ゔぃぎゃんくん": "warari25ga" };
+        const adminUser = "admin";
+        const adminPassword = "password";
+        let users = JSON.parse(localStorage.getItem("users")) || { "admin": "password" };
         let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
         let userFiles = JSON.parse(localStorage.getItem("userFiles")) || {};
 
@@ -110,6 +112,17 @@
             }
         }
 
+        function unbanUser() {
+            const unbanUsername = document.getElementById("unbanUser").value;
+            if (unbanUsername && bannedUsers.includes(unbanUsername)) {
+                bannedUsers = bannedUsers.filter(user => user !== unbanUsername);
+                localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+                alert(`${unbanUsername} のBANを解除しました。`);
+            } else {
+                alert("有効なユーザー名を入力してください。");
+            }
+        }
+
         function showAllUsers() {
             let userListDiv = document.getElementById("userList");
             userListDiv.innerHTML = "<h4>登録ユーザー一覧</h4>";
@@ -129,34 +142,7 @@
                 });
             }
         }
-　　　　　function unbanUser() {
-    const unbanUsername = document.getElementById("unbanUser").value;
-    if (unbanUsername && bannedUsers.includes(unbanUsername)) {
-        bannedUsers = bannedUsers.filter(user => user !== unbanUsername);
-        localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
-        alert(`${unbanUsername} のBANを解除しました。`);
-    } else {
-        alert("有効なユーザー名を入力してください。");
-    }
-}
 
-document.addEventListener("DOMContentLoaded", function () {
-    const adminSection = document.getElementById("adminSection");
-    if (adminSection) {
-        const unbanInput = document.createElement("input");
-        unbanInput.type = "text";
-        unbanInput.id = "unbanUser";
-        unbanInput.placeholder = "BAN解除するユーザー名";
-        
-        const unbanButton = document.createElement("button");
-        unbanButton.innerText = "BAN解除";
-        unbanButton.onclick = unbanUser;
-        
-        adminSection.appendChild(document.createElement("br"));
-        adminSection.appendChild(unbanInput);
-        adminSection.appendChild(unbanButton);
-    }
-}
         function updateFileList() {
             const loggedInUser = localStorage.getItem("loggedInUser");
             const fileList = document.getElementById("fileList");
@@ -177,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 userFiles[loggedInUser] = [];
             }
             if (userFiles[loggedInUser].length + files.length > 100) {
-                alert("INFINITY個のファイルまでアップロード可能です。");
+                alert("最大100個のファイルまでアップロード可能です。");
                 return;
             }
             
