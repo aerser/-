@@ -8,9 +8,42 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 50px;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
         }
-        #logoutSection, #adminSection, #uploadSection {
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .hidden {
             display: none;
         }
         .preview-img {
@@ -21,35 +54,37 @@
     </style>
 </head>
 <body>
-    <h2>ログインシステム</h2>
-    <div id="loginForm">
-        <input type="text" id="username" placeholder="ユーザー名"><br><br>
-        <input type="password" id="password" placeholder="パスワード"><br><br>
-        <button onclick="login()">ログイン</button>
-        <button onclick="register()">新規登録</button>
-    </div>
-    
-    <div id="logoutSection">
-        <h3 id="welcomeMessage"></h3>
-        <button onclick="logout()">ログアウト</button>
-    </div>
-    
-    <div id="adminSection">
-        <h3>管理者専用パネル</h3>
-        <button onclick="showAllUsers()">全ユーザー情報</button>
-        <input type="text" id="banUser" placeholder="BANするユーザー名">
-        <button onclick="banUser()">BAN</button>
-        <input type="text" id="unbanUser" placeholder="BAN解除するユーザー名">
-        <button onclick="unbanUser()">BAN解除</button>
-        <div id="userList"></div>
-        <div id="allUserFiles"></div>
-    </div>
-    
-    <div id="uploadSection">
-        <h3>ファイルアップロード</h3>
-        <input type="file" id="fileInput" multiple accept="image/*">
-        <button onclick="uploadFiles()">アップロード</button>
-        <div id="fileList"></div>
+    <div class="container">
+        <h2>ログインシステム</h2>
+        <div id="loginForm">
+            <input type="text" id="username" placeholder="ユーザー名"><br>
+            <input type="password" id="password" placeholder="パスワード"><br>
+            <button onclick="login()">ログイン</button>
+            <button onclick="register()">新規登録</button>
+        </div>
+        
+        <div id="logoutSection" class="hidden">
+            <h3 id="welcomeMessage"></h3>
+            <button onclick="logout()">ログアウト</button>
+        </div>
+        
+        <div id="adminSection" class="hidden">
+            <h3>管理者専用パネル</h3>
+            <button onclick="showAllUsers()">全ユーザー情報</button>
+            <input type="text" id="banUser" placeholder="BANするユーザー名">
+            <button onclick="banUser()">BAN</button>
+            <input type="text" id="unbanUser" placeholder="BAN解除するユーザー名">
+            <button onclick="unbanUser()">BAN解除</button>
+            <div id="userList"></div>
+            <div id="allUserFiles"></div>
+        </div>
+        
+        <div id="uploadSection" class="hidden">
+            <h3>ファイルアップロード</h3>
+            <input type="file" id="fileInput" multiple accept="image/*">
+            <button onclick="uploadFiles()">アップロード</button>
+            <div id="fileList"></div>
+        </div>
     </div>
 
     <script>
