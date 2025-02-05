@@ -10,26 +10,42 @@
             background-color: #e6ecf0;
             margin: 0;
             padding: 0;
+            display: flex;
         }
         .header {
             background-color: #1da1f2;
             color: white;
             padding: 10px 0;
             text-align: center;
+            width: 100%;
         }
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
+        .sidebar {
+            width: 20%;
             background: white;
             padding: 20px;
-            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            position: fixed;
+        }
+        .content {
+            width: 60%;
+            margin-left: 20%;
+            padding: 20px;
+        }
+        .right-sidebar {
+            width: 20%;
+            padding: 20px;
+            margin-left: 80%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            right: 0;
         }
         .tweet-form, .user-form, .trending {
             margin-bottom: 20px;
         }
         .tweet-form input, .tweet-form textarea, .tweet-form button,
-        .user-form input, .user-form textarea, .user-form button {
+        .user-form input, .user-form textarea, .user-form button,
+        .search-form input, .search-form button {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
@@ -93,13 +109,23 @@
         .follow-button:hover {
             background-color: #0d95e8;
         }
+        .nav-item {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Twitterクローン</h1>
     </div>
-    <div class="container">
+    <div class="sidebar">
+        <div class="nav-item"><a href="#">ホーム</a></div>
+        <div class="nav-item"><a href="#">プロフィール</a></div>
+        <div class="nav-item"><a href="#">メッセージ</a></div>
+        <div class="nav-item"><a href="#">通知</a></div>
+        <div class="nav-item"><a href="#">設定</a></div>
+    </div>
+    <div class="content">
         <div class="user-form">
             <h2>ユーザー詳細設定</h2>
             <input type="text" id="username" placeholder="ユーザー名">
@@ -112,6 +138,12 @@
             <button onclick="postTweet()">投稿</button>
         </div>
         <ul class="tweets" id="tweetList"></ul>
+    </div>
+    <div class="right-sidebar">
+        <div class="search-form">
+            <input type="text" id="searchInput" placeholder="ユーザーまたは投稿を検索">
+            <button onclick="search()">検索</button>
+        </div>
         <div class="trending">
             <h2>トレンド</h2>
             <ul id="trendingList"></ul>
@@ -244,6 +276,55 @@
                 currentUser.following.push(userToFollow);
                 displayUserDetails();
                 alert(`${userToFollow} をフォローしました。`);
+            }
+        }
+
+        function search() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            if (!searchInput) {
+                alert('検索キーワードを入力してください');
+                return;
+            }
+            const tweets = JSON.parse(localStorage.getItem('tweets')) || [];
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const searchResults = tweets.filter(tweet => tweet.content.toLowerCase().includes(searchInput) || tweet.user.toLowerCase().includes(searchInput));
+            let userResults = [];
+            for (let user in users) {
+                if (user.toLowerCase().includes(searchInput) || (users[user].bio && users[user].bio.toLowerCase().includes(searchInput))) {
+                    userResults.push(user);
+                }
+            }
+            displaySearchResults(searchResults, userResults);
+        }
+
+        function displaySearchResults(tweets, users) {
+            const tweetList = document.getElementById('tweetList');
+            tweetList.innerHTML = '';
+            tweets.forEach(tweet => {
+                const li = document.createElement('li');
+                li.className = 'tweet';
+                li.innerHTML = `
+                    <div class="content">
+                        <p class="user">${tweet.user}</p>
+                        <p>${tweet.content}</p>
+                        <div class="actions">
+                            <span onclick="likeTweet(${tweet.id})">いいね (${tweet.likes})</span>
+                            <span onclick="retweetTweet(${tweet.id})">リツイート (${tweet.retweets})</span>
+                            <span onclick="deleteTweet(${tweet.id})">削除</span>
+                        </div>
+                    </div>
+                `;
+                tweetList.appendChild(li);
+            });
+            if (users.length > 0) {
+                const userSection = document.createElement('div');
+                userSection.innerHTML = `<h2>ユーザー検索結果</h2>`;
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.innerHTML = `<p>${user}</p>`;
+                    userSection.appendChild(userDiv);
+                });
+                tweetList.appendChild(userSection);
             }
         }
 
