@@ -63,6 +63,23 @@
     </style>
 </head>
 <body>
+    <div id="loginForm" class="container hidden">
+        <h2>ログイン</h2>
+        <input type="text" id="loginUsername" placeholder="ユーザー名" required><br>
+        <input type="password" id="loginPassword" placeholder="パスワード" required><br>
+        <button onclick="login()">ログイン</button>
+        <button onclick="showRegistration()">新規登録</button>
+    </div>
+
+    <div id="registrationForm" class="container hidden">
+        <h2>新規登録</h2>
+        <input type="email" id="registerEmail" placeholder="メールアドレス" required><br>
+        <input type="text" id="registerUsername" placeholder="ユーザー名" required><br>
+        <input type="password" id="registerPassword" placeholder="パスワード" required><br>
+        <button onclick="register()">登録</button>
+        <button onclick="showLogin()">戻る</button>
+    </div>
+
     <div id="tabs" class="tabs hidden">
         <button onclick="showTab('uploadTab')">ファイルアップロード</button>
         <button onclick="showTab('timelineTab')">タイムライン</button>
@@ -106,7 +123,7 @@
         <input type="password" id="newPassword" placeholder="新しいパスワード"><br>
         <input type="text" id="newBio" placeholder="自己紹介"><br>
         <button onclick="updateSettings()">更新</button>
-        <button onclick="logout()">ログアウト</button> <!-- 追加 -->
+        <button onclick="logout()">ログアウト</button>
     </div>
 
     <div id="myPageTab" class="container hidden">
@@ -125,11 +142,12 @@
         let posts = JSON.parse(localStorage.getItem("posts")) || [];
 
         function register() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+            const email = document.getElementById("registerEmail").value;
+            const username = document.getElementById("registerUsername").value;
+            const password = document.getElementById("registerPassword").value;
             
-            if (!username || !password) {
-                alert("ユーザー名とパスワードを入力してください。");
+            if (!email || !username || !password) {
+                alert("全てのフィールドを入力してください。");
                 return;
             }
             if (users[username]) {
@@ -137,21 +155,22 @@
                 return;
             }
             
-            users[username] = password;
+            users[username] = { password, email };
             localStorage.setItem("users", JSON.stringify(users));
             alert("登録完了！ログインしてください。");
+            showLogin();
         }
 
         function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
             
             if (bannedUsers.includes(username)) {
                 alert("このアカウントはBANされています。");
                 return;
             }
             
-            if (users[username] && users[username] === password) {
+            if (users[username] && users[username].password === password) {
                 localStorage.setItem("loggedInUser", username);
                 alert("ログイン成功！");
                 updateUI();
@@ -338,10 +357,20 @@
             updateUI();
         }
 
+        function showRegistration() {
+            document.getElementById("loginForm").classList.add("hidden");
+            document.getElementById("registrationForm").classList.remove("hidden");
+        }
+
+        function showLogin() {
+            document.getElementById("registrationForm").classList.add("hidden");
+            document.getElementById("loginForm").classList.remove("hidden");
+        }
+
         function updateUI() {
             const loggedInUser = localStorage.getItem("loggedInUser");
             document.getElementById("loginForm").style.display = loggedInUser ? "none" : "block";
-            document.getElementById("logoutSection").style.display = loggedInUser ? "block" : "none";
+            document.getElementById("registrationForm").style.display = "none";
             document.getElementById("tabs").style.display = loggedInUser ? "flex" : "none";
             document.getElementById("uploadTab").style.display = loggedInUser ? "block" : "none";
             document.getElementById("timelineTab").style.display = loggedInUser ? "block" : "none";
