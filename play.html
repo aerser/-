@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>無限タイピングゲーム</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 50px;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    #word {
+      font-size: 2em;
+      margin: 20px 0;
+      color: #0f0;
+    }
+    #input {
+      font-size: 1.5em;
+      padding: 10px;
+      width: 300px;
+    }
+    #score {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>無限タイピングゲーム</h1>
+  <div id="word">スタートを押してね</div>
+  <input type="text" id="input" placeholder="ここにタイプ" disabled />
+  <div id="score">スコア: 0</div>
+  <br>
+  <button onclick="startGame()">スタート</button>
+
+  <script>
+   const words = [
+  "こんにちは", "ありがとう", "さようなら", "すし", "てんぷら", "ねこ", "いぬ", "さくら", "おはよう", "こんばんは",
+  "がっこう", "せんせい", "ともだち", "きょうしつ", "けいたい", "でんしゃ", "じてんしゃ", "くるま", "ひこうき", "しんかんせん",
+  "うみ", "やま", "かわ", "もり", "そら", "くも", "あめ", "ゆき", "かぜ", "たいよう",
+  "つき", "ほし", "ひる", "よる", "まいにち", "こんしゅう", "らいしゅう", "きょねん", "ことし", "らいねん",
+  "じかん", "いま", "あとで", "すぐ", "おそい", "はやい", "ながい", "みじかい", "おおきい", "ちいさい",
+  "たかい", "ひくい", "あつい", "さむい", "あたたかい", "すずしい", "たのしい", "うれしい", "かなしい", "こわい",
+  "おいしい", "まずい", "からい", "あまい", "にがい", "しょっぱい", "おなか", "せなか", "あたま", "て",
+  "あし", "め", "みみ", "はな", "くち", "かお", "かみ", "は", "こころ", "ゆび",
+  "いち", "に", "さん", "し", "ご", "ろく", "しち", "はち", "きゅう", "じゅう",
+  "ひゃく", "せん", "まん", "えん", "にほん", "アメリカ", "イギリス", "フランス", "ドイツ", "イタリア",
+  "ちゅうごく", "かんこく", "オーストラリア", "ロシア", "インド", "カナダ", "メキシコ", "ブラジル", "アフリカ", "エジプト",
+  "たべもの", "のみもの", "やさい", "くだもの", "りんご", "ばなな", "みかん", "ぶどう", "いちご", "もも",
+  "きゅうり", "にんじん", "じゃがいも", "たまねぎ", "レタス", "キャベツ", "トマト", "ピーマン", "とうもろこし", "なす",
+  "ごはん", "パン", "めん", "ラーメン", "うどん", "そば", "カレー", "すきやき", "しゃぶしゃぶ", "てりやき",
+  "みそしる", "たまご", "にく", "さかな", "とりにく", "ぎゅうにく", "ぶたにく", "とうふ", "のり", "わさび",
+  "おちゃ", "こうちゃ", "ジュース", "みず", "コーヒー", "ミルク", "さけ", "ビール", "ワイン", "ソーダ",
+  "でんき", "すいどう", "ガス", "エレベーター", "エスカレーター", "トイレ", "シャワー", "ふろ", "へや", "いえ",
+  "ベッド", "いす", "テーブル", "ソファ", "でんわ", "テレビ", "パソコン", "エアコン", "せんぷうき", "れいぞうこ",
+  "かがみ", "たな", "かべ", "まど", "カーテン", "ドア", "ゆか", "てんじょう", "ランプ", "くつ",
+  "ふく", "ぼうし", "てぶくろ", "マフラー", "くつした", "コート", "シャツ", "ズボン", "スカート", "セーター"
+];
+    let currentWord = "";
+    let score = 0;
+    let timeLimit = 3000;
+    let timeoutId;
+
+    const wordEl = document.getElementById("word");
+    const inputEl = document.getElementById("input");
+    const scoreEl = document.getElementById("score");
+
+    function getRandomWord() {
+      return words[Math.floor(Math.random() * words.length)];
+    }
+
+    function showNewWord() {
+      currentWord = getRandomWord();
+      wordEl.textContent = currentWord;
+      inputEl.value = "";
+      inputEl.focus();
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        endGame("時間切れ！");
+      }, timeLimit);
+    }
+
+    function startGame() {
+      score = 0;
+      timeLimit = 3000;
+      inputEl.disabled = false;
+      showNewWord();
+      scoreEl.textContent = "スコア: " + score;
+    }
+
+    function endGame(message) {
+      alert(message + "\nあなたのスコア: " + score);
+      inputEl.disabled = true;
+      wordEl.textContent = "ゲームオーバー";
+    }
+
+    inputEl.addEventListener("input", () => {
+      if (inputEl.value === currentWord) {
+        score++;
+        scoreEl.textContent = "スコア: " + score;
+
+        // 段階的に難しくする（時間を短くする）
+        timeLimit = Math.max(1000, timeLimit - 100);
+        showNewWord();
+      }
+    });
+  </script>
+</body>
+</html>
